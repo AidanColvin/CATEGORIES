@@ -3,92 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connections Game</title>
+    <title>Categories Game</title>
     <style>
         :root {
             --yellow: #f9df6d; --green: #a0c35a;
             --blue: #b0c4ef; --purple: #ba81c5;
-            --bg: #ffffff;
-            /* Updated to the Bone color from your screenshot */
+            /* Page Background: Ivory */
+            --bg: #FFFFF0; 
+            /* Card Background: Bone */
             --card-default: #E3DAC9; 
             --card-selected: #5a594e;
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            background: var(--bg); 
-            padding: 20px; 
+            display: flex; flex-direction: column; align-items: center; 
+            background: var(--bg); padding: 20px; 
         }
         #game-container { max-width: 500px; width: 100%; }
         
-        /* Grid styling with thick black borders as seen in your screenshot */
         .grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 10px; 
-            padding: 10px;
-            background-color: #000000; 
-            border: 10px solid #000000;
-            border-radius: 12px;
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 4px; /* Thinner black borders */
+            padding: 4px; background-color: #000; 
+            border: 4px solid #000; border-radius: 8px;
             margin-bottom: 20px;
         }
 
         .word-card { 
-            aspect-ratio: 1/1; 
-            background: var(--card-default); 
-            border-radius: 4px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            /* Bold, clear text matching your target image */
-            font-weight: 800; 
-            text-transform: uppercase; 
-            font-size: 1.1rem; 
-            cursor: pointer; 
-            user-select: none; 
-            text-align: center; 
-            padding: 5px;
-            color: #000;
+            aspect-ratio: 1/1; background: var(--card-default); 
+            border-radius: 2px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-weight: 800; text-transform: uppercase; 
+            cursor: pointer; user-select: none; text-align: center; padding: 5px;
+        }
+        .word-text { font-size: 1rem; }
+        .def-text { 
+            font-size: 0.6rem; text-transform: none; font-weight: 400; 
+            margin-top: 5px; color: #444; display: none; 
         }
 
-        /* Selected state remains the dark charcoal/brown */
-        .word-card.selected { 
-            background: var(--card-selected); 
-            color: white; 
-        }
+        .word-card.selected { background: var(--card-selected); color: white; }
+        .word-card.selected .def-text { color: #ccc; }
 
         .solved-row { 
-            grid-column: span 4; 
-            height: 70px; 
-            border-radius: 8px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            margin-bottom: 10px; 
-            font-weight: 800;
-            text-transform: uppercase;
+            grid-column: span 4; height: 70px; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin-bottom: 8px; font-weight: 800; text-transform: uppercase;
         }
 
         .stats { margin-bottom: 20px; font-size: 1.2rem; font-weight: 600; }
-        .controls { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
+        .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         
         button { 
-            padding: 15px 30px; 
-            border-radius: 40px; 
-            border: 1px solid #7f7f7f; 
-            background: white; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 1rem;
-            color: #7f7f7f;
+            padding: 12px 20px; border-radius: 40px; border: 1px solid #000; 
+            background: white; font-weight: bold; cursor: pointer; font-size: 0.9rem;
         }
-        button:not(:disabled) {
-            border-color: #000;
-            color: #000;
-        }
+        button:disabled { opacity: 0.3; cursor: not-allowed; }
         
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .shake { animation: shake 0.2s ease-in-out 0s 2; }
@@ -96,19 +66,34 @@
 </head>
 <body>
 
-    <h1>Connections</h1>
+    <h1>Categories</h1>
     <div id="game-container">
-        <div class="stats">Mistakes remaining: <span id="mistakes">4</span></div>
+        <div class="stats">Mistakes: <span id="mistakes">4</span></div>
         <div id="solved-container"></div>
         <div id="grid" class="grid"></div>
         <div class="controls">
+            <button id="shuffle-btn">Shuffle</button>
+            <button id="def-btn">Definitions</button>
             <button id="submit-btn" disabled>Submit</button>
         </div>
     </div>
 
     <script>
-        // ... (The JavaScript logic remains the same to handle your data)
+        // Mock Dictionary for the "Definitions" feature
+        const dictionary = {
+            "BARK": { phon: "/bɑːrk/", def: "Outer layer of a tree" },
+            "LEAF": { phon: "/liːf/", def: "Green plant organ" },
+            "ROOT": { phon: "/ruːt/", def: "Underground part of plant" },
+            "BRANCH": { phon: "/bræntʃ/", def: "Structural wood arm" },
+            "SALES": { phon: "/seɪlz/", def: "Exchanging for money" },
+            "LEGAL": { phon: "/ˈliːɡl/", def: "Related to the law" },
+            "ADMIN": { phon: "/ˈædmɪn/", def: "Management/Office work" },
+            "SECTOR": { phon: "/ˈsektər/", def: "A distinct area/part" }
+            // Add more as you expand your library
+        };
+
         let gameData = [];
+        let currentWords = [];
         let selectedWords = [];
         let mistakes = 4;
         let solvedCategories = [];
@@ -119,6 +104,11 @@
                 const data = await response.json();
                 const batchKey = Object.keys(data.batches)[0];
                 gameData = data.batches[batchKey];
+                
+                currentWords = gameData
+                    .flatMap(cat => cat.words.map(w => ({ text: w, catId: cat.id })));
+                
+                shuffleWords();
                 renderGrid();
             } catch (e) { console.error("Error loading JSON", e); }
         }
@@ -126,18 +116,24 @@
         function renderGrid() {
             const gridEl = document.getElementById('grid');
             gridEl.innerHTML = '';
-            const words = gameData
-                .filter(cat => !solvedCategories.includes(cat.id))
-                .flatMap(cat => cat.words.map(w => ({ text: w, catId: cat.id })))
-                .sort(() => Math.random() - 0.5);
+            
+            if (currentWords.length === 0) {
+                gridEl.style.display = 'none';
+                return;
+            }
 
-            if (words.length === 0) gridEl.style.display = 'none';
-            else gridEl.style.display = 'grid';
-
-            words.forEach(wordObj => {
+            currentWords.forEach(wordObj => {
                 const div = document.createElement('div');
                 div.className = 'word-card';
-                div.textContent = wordObj.text;
+                if (selectedWords.find(sw => sw.text === wordObj.text)) div.classList.add('selected');
+                
+                const wordInfo = dictionary[wordObj.text] || { phon: "", def: "Definition unknown" };
+                
+                div.innerHTML = `
+                    <div class="word-text">${wordObj.text}</div>
+                    <div class="def-text"><i>${wordInfo.phon}</i><br>${wordInfo.def}</div>
+                `;
+                
                 div.onclick = () => toggleSelect(div, wordObj);
                 gridEl.appendChild(div);
             });
@@ -154,6 +150,20 @@
             document.getElementById('submit-btn').disabled = selectedWords.length !== 4;
         }
 
+        function shuffleWords() {
+            currentWords.sort(() => Math.random() - 0.5);
+            renderGrid();
+        }
+
+        document.getElementById('shuffle-btn').onclick = shuffleWords;
+
+        document.getElementById('def-btn').onclick = () => {
+            const defs = document.querySelectorAll('.def-text');
+            defs.forEach(d => {
+                d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+            });
+        };
+
         document.getElementById('submit-btn').onclick = () => {
             const firstId = selectedWords[0].catId;
             const isMatch = selectedWords.every(w => w.catId === firstId);
@@ -164,14 +174,18 @@
         function handleCorrect(catId) {
             const category = gameData.find(c => c.id === catId);
             solvedCategories.push(catId);
+            
+            currentWords = currentWords.filter(w => w.catId !== catId);
+            
             const row = document.createElement('div');
             row.className = 'solved-row';
             row.style.backgroundColor = `var(--${category.color.toLowerCase()})`;
-            row.innerHTML = `<div style="font-size: 1.1rem">${category.name}</div><div style="font-weight:normal; font-size: 0.9rem">${category.words.join(', ')}</div>`;
+            row.innerHTML = `<div>${category.name}</div><div style="font-weight:normal; font-size: 0.8rem">${category.words.join(', ')}</div>`;
+            
             document.getElementById('solved-container').appendChild(row);
             selectedWords = [];
             renderGrid();
-            if (solvedCategories.length === 4) setTimeout(() => alert("Perfect!"), 300);
+            if (solvedCategories.length === 4) setTimeout(() => alert("Excellent!"), 300);
         }
 
         function handleWrong() {
@@ -180,11 +194,9 @@
             const grid = document.getElementById('grid');
             grid.classList.add('shake');
             setTimeout(() => grid.classList.remove('shake'), 500);
-            if (mistakes === 0) {
-                alert("Game Over!");
-                location.reload();
-            }
+            if (mistakes === 0) { alert("Game Over!"); location.reload(); }
         }
+
         initGame();
     </script>
 </body>
