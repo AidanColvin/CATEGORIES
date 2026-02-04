@@ -20,11 +20,11 @@ The Rule: Must have a 3-word overlap with the rest of the board.
 Effect: This creates a "Red Herring" situation where the player sees a nearly complete set of 4, but one word is actually part of the Expert or Seed group.
 COLOR_TRICKY = "#FFFFE0"    # Light Soft Yellow
 
-# Category 4 - Hard (LIGHT SOFT RED)
+# Category 4 - Expert (LIGHT SOFT RED)
 Definition: This is the hardest category to solve because it doesn't exist in isolation.
 The Rule: It must have an overlap of at least 4 words across the other three categories.
 Effect: Every single word in the Expert category could "logically" fit somewhere else, forcing the player to solve the other three groups first to find what's left over.
-COLOR_HARD = "#FFB6C1"  # Light Soft Red
+COLOR_Expert = "#FFB6C1"  # Light Soft Red
 
 # Categories Rules
 There are four categories, each category has a different level of difficulty (hard, tricky, red herring, seed) 
