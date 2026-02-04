@@ -63,6 +63,33 @@ python main.py --wordset custom_words.json
 
 ## Game Rules
 
+### Categories
+The game consists of 4 color-coded difficulty levels:
+* **Easy (Green):** Broad, simple concepts (e.g., Types of Fish).
+* **Medium (Blue):** Tangible objects or nature (e.g., Kitchen Items).
+* **Hard (Yellow):** Abstract concepts or games (e.g., Card Games).
+* **Expert (Red):** Niche groups or specific genres (e.g., Music Genres).
+
+### Word Constraints
+* **Length:** Minimum 3 letters.
+* **Syllables:** Maximum 3 syllables.
+* **Uniqueness:** No repeated words across categories.
+* **Relevance:** Words must be commonly recognizable (no obscure technical jargon).
+* **Morphology:** No groupings based solely on spelling, roots, or suffixes (e.g., "words ending in Y").
+
+## Features
+
+* **Dynamic Grid:** Words and categories are shuffled every game session.
+* **Interactive UI:** Click-to-select interface with hover and selection states.
+* **Smart Feedback:**
+    * **Success:** Reveals the category name and highlights the row in the category color.
+    * **One Off:** Alerts if 3 of 4 words are correct.
+    * **Two Off:** Alerts if 2 of 4 words are correct.
+* **Controls:**
+    * **Shuffle:** Randomizes word positions without resetting progress.
+    * **Reset:** Generates a fresh game board.
+    * **Submit:** Validates selection (accessible via button or `Enter` key).
+
 ### Core Rules
 
 1. **Grid Layout**: 16 words displayed in a 4×4 grid
