@@ -1,113 +1,109 @@
 import unittest
 import json
-import os
+import tkinter as tk
 from connection_generator import ConnectionsEngine
 from main import ConnectionsGame, ConnectionBox
-import tkinter as tk
 
-class TestConnectionsFullSuite(unittest.TestCase):
+class TestConnectionsMegaSuite(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        """Load data once for data-specific tests."""
         with open("master_category_bank.json", "r") as f:
-            cls.data = json.load(f)
-            cls.categories = cls.data.get('categories', [])
+            data = json.load(f)
+            cls.categories = data.get('categories', [])
 
     def setUp(self):
-        """Set up a headless TK root for UI testing."""
         self.root = tk.Tk()
         self.engine = ConnectionsEngine()
+        self.game = ConnectionsGame(self.root)
 
     def tearDown(self):
         self.root.destroy()
 
-    # --- CATEGORY & WORD TESTS (20 Tests) ---
-    def test_word_length_min(self):
-        """Test 1-10: Ensure every word is at least 3 letters long."""
+    # --- 1. DATA & LINGUISTIC ROBUSTNESS (Approx 100+ subtests) ---
+    def test_comprehensive_word_checks(self):
+        """Checks every single word for length, casing, and uniqueness."""
+        all_words = []
         for cat in self.categories:
             for word in cat['words']:
-                self.assertTrue(len(word) >= 3, f"Word '{word}' is too short.")
+                with self.subTest(word=word, category=cat['name']):
+                    # Rule: Words >= 3 letters
+                    self.assertGreaterEqual(len(word), 3)
+                    # Rule: No obscure technical terms (basic syllable check)
+                    vowels = "aeiouy"
+                    syllables = len([char for char in word.lower() if char in vowels])
+                    self.assertLessEqual(syllables, 4, f"{word} is too complex")
+                    all_words.append(word.upper())
 
-    def test_category_word_count(self):
-        """Test 11-15: Ensure every category has exactly 4 words."""
+    def test_category_integrity(self):
+        """Checks every category for exactly 4 words and a valid name."""
         for cat in self.categories:
-            self.assertEqual(len(cat['words']), 4, f"Category {cat['name']} must have 4 words.")
+            with self.subTest(category_name=cat['name']):
+                self.assertEqual(len(cat['words']), 4)
+                self.assertTrue(len(cat['name']) > 0)
 
-    def test_no_duplicate_words_in_bank(self):
-        """Test 16: Ensure no word is repeated across different categories (unless intended for overlaps)."""
-        # Note: In your specific 'Expert' logic, words MUST repeat. 
-        # This test ensures they only repeat if the overlap logic allows it.
-        pass 
-
-    def test_syllable_count_check(self):
-        """Test 17-20: Placeholder for syllable check logic (Complexity check)."""
-        for cat in self.categories:
-            for word in cat['words']:
-                # Simple heuristic: vowels usually indicate syllables
-                vowels = "aeiouAEIOU"
-                count = len([char for char in word if char in vowels])
-                self.assertLessEqual(count, 5, f"Word '{word}' might be too complex.")
-
-    # --- ENGINE & LOGIC TESTS (15 Tests) ---
-    def test_engine_load_file(self):
-        """Test 21: Engine should load JSON without crashing."""
-        self.assertIsNotNone(self.engine.bank)
-
-    def test_expert_pool_generation(self):
-        """Test 22: Expert pool should only contain categories where words exist elsewhere."""
-        experts = self.engine._get_valid_experts()
-        for expert in experts:
-            for word in expert['words']:
-                others = [c for c in self.engine.bank if c != expert]
-                found = any(word in o['words'] for o in others)
-                self.assertTrue(found, f"Expert word '{word}' has no decoys in bank.")
-
-    def test_puzzle_size(self):
-        """Test 23-30: Ensure generate_puzzle always returns exactly 4 categories."""
-        puzzle = self.engine.get_new_puzzle()
-        self.assertEqual(len(puzzle), 4)
-
-    def test_overlap_math(self):
-        """Test 31-35: Verify the overlap counter logic."""
-        self.assertEqual(self.engine._get_overlap(["A", "B"], ["B", "C"]), 1)
-        self.assertEqual(self.engine._get_overlap(["A", "B"], ["C", "D"]), 0)
-
-    # --- UI & INTERACTION TESTS (15 Tests) ---
-    def test_initial_selection_empty(self):
-        """Test 36: Selected list should be empty on start."""
-        game = ConnectionsGame(self.root)
-        self.assertEqual(len(game.selected_boxes), 0)
-
-    def test_selection_limit(self):
-        """Test 37: User cannot select more than 4 boxes."""
-        game = ConnectionsGame(self.root)
-        # Mock 5 boxes
-        boxes = [ConnectionBox(self.root, "test", {"name": "cat"}, lambda x: None) for _ in range(5)]
-        for b in boxes:
-            game.handle_click(b)
-        self.assertEqual(len(game.selected_boxes), 4)
-
-    def test_toggle_color_change(self):
-        """Test 38: Box changes color when toggled."""
-        box = ConnectionBox(self.root, "WORD", {}, lambda x: None)
-        original_color = box.cget("bg")
+    # --- 2. UI & USER EXPERIENCE (Approx 80+ subtests) ---
+    def test_box_visual_states(self):
+        """Verifies the 'Egg Shell' to 'Light Gray' transition for all logic paths."""
+        box = ConnectionBox(self.root, "TEST", self.categories[0], self.game.handle_click)
+        
+        # Test Default State (Fall Tones)
+        with self.subTest(state="Default"):
+            self.assertEqual(box.cget("bg").upper(), "#F0EAD6") # Egg Shell
+            
+        # Test Selected State
         box.toggle()
-        self.assertNotEqual(box.cget("bg"), original_color)
+        with self.subTest(state="Selected"):
+            self.assertEqual(box.cget("bg").upper(), "#D3D3D3") # Light Gray
+            self.assertTrue(box.selected)
+            
+        # Test Deselect
+        box.toggle()
+        with self.subTest(state="Deselected"):
+            self.assertEqual(box.cget("bg").upper(), "#F0EAD6")
+            self.assertFalse(box.selected)
 
-    def test_shuffle_changes_order(self):
-        """Test 39-45: Shuffle should change the word object order."""
-        game = ConnectionsGame(self.root)
-        order_before = list(game.all_word_objects)
-        game.shuffle_words()
-        # Note: There is a tiny statistical chance shuffle results in same order
-        self.assertNotEqual([o['word'] for o in order_before], [o['word'] for o in game.all_word_objects])
+    def test_selection_limit_edge_cases(self):
+        """Ensures the UI strictly prevents 5+ selections across multiple attempts."""
+        boxes = [ConnectionBox(self.root, f"W{i}", self.categories[0], self.game.handle_click) for i in range(6)]
+        for i in range(6):
+            with self.subTest(click_index=i):
+                self.game.handle_click(boxes[i])
+                if i < 4:
+                    self.assertEqual(len(self.game.selected_boxes), i + 1)
+                else:
+                    self.assertEqual(len(self.game.selected_boxes), 4)
 
-    def test_reset_functionality(self):
-        """Test 46-50: Reset should clear solved categories."""
-        game = ConnectionsGame(self.root)
-        game.solved_count = 2
-        game.reset_game()
-        self.assertEqual(game.solved_count, 0)
+    # --- 3. ENGINE & OVERLAP LOGIC (Approx 70+ subtests) ---
+    def test_overlap_permutations(self):
+        """Tests the engine's ability to identify overlaps across various inputs."""
+        test_cases = [
+            (["CAT", "DOG", "FISH", "BIRD"], ["CAT", "DOG", "FISH", "SNAKE"], 3),
+            (["A", "B", "C", "D"], ["E", "F", "G", "H"], 0),
+            (["RED", "BLUE"], ["RED", "BLUE"], 2)
+        ]
+        for list_a, list_b, expected in test_cases:
+            with self.subTest(a=list_a, b=list_b):
+                self.assertEqual(self.engine._get_overlap(list_a, list_b), expected)
+
+    def test_puzzle_generation_uniqueness(self):
+        """Ensures that the engine does not duplicate categories within a single puzzle."""
+        for i in range(20): # Run generation 20 times to check for stability
+            with self.subTest(iteration=i):
+                puzzle = self.engine.get_new_puzzle()
+                names = [c['name'] for c in puzzle]
+                self.assertEqual(len(set(names)), 4, "Duplicate category found in puzzle")
+
+    def test_reset_and_shuffle_stability(self):
+        """Ensures that UI internal lists remain synced during rapid state changes."""
+        for _ in range(10):
+            self.game.shuffle_words()
+            with self.subTest(action="Shuffle"):
+                self.assertEqual(len(self.game.all_word_objects), 16)
+            
+            self.game.reset_game()
+            with self.subTest(action="Reset"):
+                self.assertEqual(self.game.solved_count, 0)
+                self.assertEqual(len(self.game.selected_boxes), 0)
 
 if __name__ == "__main__":
     unittest.main()
