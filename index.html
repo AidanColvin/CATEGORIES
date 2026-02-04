@@ -9,73 +9,86 @@
             --yellow: #f9df6d; --green: #a0c35a;
             --blue: #b0c4ef; --purple: #ba81c5;
             --bg: #ffffff;
-            --default-card: #efefe6;
-            --selected-brown: #5a594e; /* The dark brown from your screenshot */
+            /* Updated to the Bone color from your screenshot */
+            --card-default: #E3DAC9; 
+            --card-selected: #5a594e;
         }
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background: var(--bg); padding: 20px; }
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background: var(--bg); 
+            padding: 20px; 
+        }
         #game-container { max-width: 500px; width: 100%; }
         
-        /* Grid styling with black gaps */
+        /* Grid styling with thick black borders as seen in your screenshot */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
-            gap: 8px; /* The "lines" between the boxes */
-            padding: 8px;
-            background-color: #000000; /* This makes the gaps appear black */
-            border-radius: 8px;
+            gap: 10px; 
+            padding: 10px;
+            background-color: #000000; 
+            border: 10px solid #000000;
+            border-radius: 12px;
             margin-bottom: 20px;
         }
 
         .word-card { 
             aspect-ratio: 1/1; 
-            background: var(--default-card); 
+            background: var(--card-default); 
             border-radius: 4px;
             display: flex; 
             align-items: center; 
             justify-content: center;
-            font-weight: 700; 
+            /* Bold, clear text matching your target image */
+            font-weight: 800; 
             text-transform: uppercase; 
-            /* Larger text as requested */
-            font-size: 1rem; 
+            font-size: 1.1rem; 
             cursor: pointer; 
             user-select: none; 
             text-align: center; 
-            padding: 10px;
+            padding: 5px;
             color: #000;
         }
 
-        /* Selected state - The Dark Brown color */
+        /* Selected state remains the dark charcoal/brown */
         .word-card.selected { 
-            background: var(--selected-brown); 
+            background: var(--card-selected); 
             color: white; 
         }
 
         .solved-row { 
             grid-column: span 4; 
             height: 70px; 
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            margin-bottom: 8px; 
-            font-weight: bold;
+            margin-bottom: 10px; 
+            font-weight: 800;
             text-transform: uppercase;
         }
 
-        .stats { margin-bottom: 20px; font-size: 1.2rem; font-weight: 500; }
+        .stats { margin-bottom: 20px; font-size: 1.2rem; font-weight: 600; }
         .controls { display: flex; gap: 15px; justify-content: center; margin-top: 10px; }
         
         button { 
-            padding: 15px 25px; 
-            border-radius: 30px; 
-            border: 1px solid #000; 
+            padding: 15px 30px; 
+            border-radius: 40px; 
+            border: 1px solid #7f7f7f; 
             background: white; 
             font-weight: bold; 
             cursor: pointer; 
             font-size: 1rem;
+            color: #7f7f7f;
         }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        button:not(:disabled) {
+            border-color: #000;
+            color: #000;
+        }
         
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .shake { animation: shake 0.2s ease-in-out 0s 2; }
@@ -94,6 +107,7 @@
     </div>
 
     <script>
+        // ... (The JavaScript logic remains the same to handle your data)
         let gameData = [];
         let selectedWords = [];
         let mistakes = 4;
@@ -103,23 +117,20 @@
             try {
                 const response = await fetch('categories.json');
                 const data = await response.json();
-                // Selecting the first batch
                 const batchKey = Object.keys(data.batches)[0];
                 gameData = data.batches[batchKey];
                 renderGrid();
-            } catch (e) { console.error("Could not load categories.json", e); }
+            } catch (e) { console.error("Error loading JSON", e); }
         }
 
         function renderGrid() {
             const gridEl = document.getElementById('grid');
             gridEl.innerHTML = '';
-            
             const words = gameData
                 .filter(cat => !solvedCategories.includes(cat.id))
                 .flatMap(cat => cat.words.map(w => ({ text: w, catId: cat.id })))
                 .sort(() => Math.random() - 0.5);
 
-            // If no words left, hide the black grid container
             if (words.length === 0) gridEl.style.display = 'none';
             else gridEl.style.display = 'grid';
 
@@ -146,29 +157,21 @@
         document.getElementById('submit-btn').onclick = () => {
             const firstId = selectedWords[0].catId;
             const isMatch = selectedWords.every(w => w.catId === firstId);
-
-            if (isMatch) {
-                handleCorrect(firstId);
-            } else {
-                handleWrong();
-            }
+            if (isMatch) handleCorrect(firstId);
+            else handleWrong();
         };
 
         function handleCorrect(catId) {
             const category = gameData.find(c => c.id === catId);
             solvedCategories.push(catId);
-            
             const row = document.createElement('div');
             row.className = 'solved-row';
             row.style.backgroundColor = `var(--${category.color.toLowerCase()})`;
             row.innerHTML = `<div style="font-size: 1.1rem">${category.name}</div><div style="font-weight:normal; font-size: 0.9rem">${category.words.join(', ')}</div>`;
-            
             document.getElementById('solved-container').appendChild(row);
             selectedWords = [];
             renderGrid();
-            if (solvedCategories.length === 4) {
-                setTimeout(() => alert("Excellent!"), 300);
-            }
+            if (solvedCategories.length === 4) setTimeout(() => alert("Perfect!"), 300);
         }
 
         function handleWrong() {
@@ -177,13 +180,11 @@
             const grid = document.getElementById('grid');
             grid.classList.add('shake');
             setTimeout(() => grid.classList.remove('shake'), 500);
-
             if (mistakes === 0) {
                 alert("Game Over!");
                 location.reload();
             }
         }
-
         initGame();
     </script>
 </body>
