@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categories Game</title>
+    <title>Categories</title>
     <style>
         :root {
             --yellow: #f9df6d; --green: #a0c35a;
             --blue: #b0c4ef; --purple: #ba81c5;
-            /* Page Background: Ivory */
-            --bg: #FFFFF0; 
+            /* Page Background: Floral White */
+            --bg: #FFFAF0; 
             /* Card Background: Bone */
             --card-default: #E3DAC9; 
-            --card-selected: #5a594e;
+            /* Selected Background: Classic Taupe */
+            --card-selected: #D3BBA4; 
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -21,32 +22,40 @@
         }
         #game-container { max-width: 500px; width: 100%; }
         
+        /* Uniform black grid */
         .grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); 
-            gap: 4px; /* Thinner black borders */
-            padding: 4px; background-color: #000; 
-            border: 4px solid #000; border-radius: 8px;
+            gap: 6px; 
+            padding: 6px; 
+            background-color: #000; 
+            border: 6px solid #000; 
+            border-radius: 12px;
             margin-bottom: 20px;
         }
 
         .word-card { 
             aspect-ratio: 1/1; background: var(--card-default); 
-            border-radius: 2px; display: flex; flex-direction: column;
+            border-radius: 8px; /* Slightly more curved corners */
+            display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             font-weight: 800; text-transform: uppercase; 
             cursor: pointer; user-select: none; text-align: center; padding: 5px;
+            transition: background 0.2s;
         }
-        .word-text { font-size: 1rem; }
-        .def-text { 
-            font-size: 0.6rem; text-transform: none; font-weight: 400; 
-            margin-top: 5px; color: #444; display: none; 
+        .word-text { font-size: 1rem; color: #000; }
+        
+        /* Definitions styling */
+        .def-container { 
+            font-size: 0.55rem; text-transform: none; font-weight: 500; 
+            margin-top: 4px; color: #333; line-height: 1.1;
+            display: none; /* Hidden by default */
         }
 
-        .word-card.selected { background: var(--card-selected); color: white; }
-        .word-card.selected .def-text { color: #ccc; }
+        /* Selected state: Classic Taupe */
+        .word-card.selected { background: var(--card-selected); }
 
         .solved-row { 
-            grid-column: span 4; height: 70px; border-radius: 8px;
+            grid-column: span 4; height: 70px; border-radius: 10px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             margin-bottom: 8px; font-weight: 800; text-transform: uppercase;
         }
@@ -55,10 +64,10 @@
         .controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         
         button { 
-            padding: 12px 20px; border-radius: 40px; border: 1px solid #000; 
+            padding: 12px 20px; border-radius: 40px; border: 1.5px solid #000; 
             background: white; font-weight: bold; cursor: pointer; font-size: 0.9rem;
         }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        button:disabled { opacity: 0.3; cursor: not-allowed; border-color: #999; }
         
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .shake { animation: shake 0.2s ease-in-out 0s 2; }
@@ -68,7 +77,7 @@
 
     <h1>Categories</h1>
     <div id="game-container">
-        <div class="stats">Mistakes: <span id="mistakes">4</span></div>
+        <div class="stats">Mistakes remaining: <span id="mistakes">4</span></div>
         <div id="solved-container"></div>
         <div id="grid" class="grid"></div>
         <div class="controls">
@@ -79,17 +88,24 @@
     </div>
 
     <script>
-        // Mock Dictionary for the "Definitions" feature
+        // Dictionary with real definitions
         const dictionary = {
-            "BARK": { phon: "/bɑːrk/", def: "Outer layer of a tree" },
-            "LEAF": { phon: "/liːf/", def: "Green plant organ" },
-            "ROOT": { phon: "/ruːt/", def: "Underground part of plant" },
-            "BRANCH": { phon: "/bræntʃ/", def: "Structural wood arm" },
-            "SALES": { phon: "/seɪlz/", def: "Exchanging for money" },
-            "LEGAL": { phon: "/ˈliːɡl/", def: "Related to the law" },
-            "ADMIN": { phon: "/ˈædmɪn/", def: "Management/Office work" },
-            "SECTOR": { phon: "/ˈsektər/", def: "A distinct area/part" }
-            // Add more as you expand your library
+            "BARK": { phon: "/bɑːrk/", def: "The protective outer covering of a tree trunk." },
+            "LEAF": { phon: "/liːf/", def: "A flattened structure of a higher plant, typically green." },
+            "ROOT": { phon: "/ruːt/", def: "The part of a plant that attaches it to the ground." },
+            "BRANCH": { phon: "/bræntʃ/", def: "A part of a tree which grows out from the trunk." },
+            "SALES": { phon: "/seɪlz/", def: "The department responsible for selling goods." },
+            "LEGAL": { phon: "/ˈliːɡl/", def: "Related to or permitted by law." },
+            "ADMIN": { phon: "/ˈædmɪn/", def: "The management of public or business affairs." },
+            "SECTOR": { phon: "/ˈsektər/", def: "An area or portion that is distinct from others." },
+            "SOW": { phon: "/soʊ/", def: "To plant seed by scattering it on or in the earth." },
+            "SEED": { phon: "/siːd/", def: "A flowering plant's unit of reproduction." },
+            "BLOOM": { phon: "/bluːm/", def: "A flower, especially one cultivated for its beauty." },
+            "GARDEN": { phon: "/ˈɡɑːrdn/", def: "A piece of ground used for growing flowers or fruit." },
+            "WOOF": { phon: "/wʊf/", def: "The sound made by a barking dog." },
+            "HOWL": { phon: "/haʊl/", def: "A long, loud, doleful cry uttered by an animal." },
+            "GROWL": { phon: "/ɡraʊl/", def: "A low guttural sound made in the throat by an animal." },
+            "YELP": { phon: "/jelp/", def: "A short, sharp cry, especially of pain or alarm." }
         };
 
         let gameData = [];
@@ -105,11 +121,8 @@
                 const batchKey = Object.keys(data.batches)[0];
                 gameData = data.batches[batchKey];
                 
-                currentWords = gameData
-                    .flatMap(cat => cat.words.map(w => ({ text: w, catId: cat.id })));
-                
+                currentWords = gameData.flatMap(cat => cat.words.map(w => ({ text: w, catId: cat.id })));
                 shuffleWords();
-                renderGrid();
             } catch (e) { console.error("Error loading JSON", e); }
         }
 
@@ -125,13 +138,18 @@
             currentWords.forEach(wordObj => {
                 const div = document.createElement('div');
                 div.className = 'word-card';
-                if (selectedWords.find(sw => sw.text === wordObj.text)) div.classList.add('selected');
+                div.id = `card-${wordObj.text}`;
                 
-                const wordInfo = dictionary[wordObj.text] || { phon: "", def: "Definition unknown" };
+                const isSelected = selectedWords.find(sw => sw.text === wordObj.text);
+                if (isSelected) div.classList.add('selected');
+                
+                const info = dictionary[wordObj.text] || { phon: "", def: "No definition found." };
                 
                 div.innerHTML = `
                     <div class="word-text">${wordObj.text}</div>
-                    <div class="def-text"><i>${wordInfo.phon}</i><br>${wordInfo.def}</div>
+                    <div class="def-container" id="def-${wordObj.text}">
+                        <i>${info.phon}</i><br>${info.def}
+                    </div>
                 `;
                 
                 div.onclick = () => toggleSelect(div, wordObj);
@@ -140,9 +158,12 @@
         }
 
         function toggleSelect(el, wordObj) {
+            const defDiv = document.getElementById(`def-${wordObj.text}`);
+            
             if (el.classList.contains('selected')) {
                 el.classList.remove('selected');
                 selectedWords = selectedWords.filter(w => w.text !== wordObj.text);
+                defDiv.style.display = 'none'; // Hide definition if unselected
             } else if (selectedWords.length < 4) {
                 el.classList.add('selected');
                 selectedWords.push(wordObj);
@@ -158,9 +179,13 @@
         document.getElementById('shuffle-btn').onclick = shuffleWords;
 
         document.getElementById('def-btn').onclick = () => {
-            const defs = document.querySelectorAll('.def-text');
-            defs.forEach(d => {
-                d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+            // Only show definitions for currently selected words
+            selectedWords.forEach(w => {
+                const defDiv = document.getElementById(`def-${w.text}`);
+                if (defDiv) {
+                    const isVisible = defDiv.style.display === 'block';
+                    defDiv.style.display = isVisible ? 'none' : 'block';
+                }
             });
         };
 
@@ -174,7 +199,6 @@
         function handleCorrect(catId) {
             const category = gameData.find(c => c.id === catId);
             solvedCategories.push(catId);
-            
             currentWords = currentWords.filter(w => w.catId !== catId);
             
             const row = document.createElement('div');
@@ -184,8 +208,8 @@
             
             document.getElementById('solved-container').appendChild(row);
             selectedWords = [];
+            document.getElementById('submit-btn').disabled = true;
             renderGrid();
-            if (solvedCategories.length === 4) setTimeout(() => alert("Excellent!"), 300);
         }
 
         function handleWrong() {
