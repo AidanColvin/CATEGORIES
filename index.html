@@ -9,9 +9,10 @@
             --bg: #FFFAF0; 
             --card-base: #B09B8C; 
             --card-selected: #FFE4C4; 
-            /* Lighter brown for buttons */
             --button-bg: #D2B48C; 
             --grid-line: #000;
+            /* Uniform slim width for all black lines */
+            --border-width: 4px; 
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -31,13 +32,13 @@
             letter-spacing: 6px;
         }
 
-        /* Wider, uniform grid lines and border */
+        /* Slim, uniform grid and border */
         .grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); 
-            gap: 8px; /* Increased width */
-            padding: 8px; 
+            gap: var(--border-width); 
+            padding: var(--border-width); 
             background-color: var(--grid-line); 
-            border: 8px solid var(--grid-line); /* Matches gap exactly */
+            border: var(--border-width) solid var(--grid-line); 
             border-radius: 35px;
             margin-bottom: 20px;
             box-sizing: border-box;
@@ -55,7 +56,6 @@
             transition: background 0.15s ease;
         }
         
-        /* Increased font size for the words */
         .word-text { font-size: 1.3rem; color: #000; letter-spacing: 0.5px; }
         
         .def-container { 
@@ -67,17 +67,22 @@
         .word-card.selected { background: var(--card-selected); }
 
         .controls { 
-            display: flex; gap: 10px; justify-content: center; 
-            margin-bottom: 10px; width: 100%;
-            padding: 0 50px; /* Slightly more space on sides */
+            display: flex; gap: 12px; justify-content: center; 
+            margin-bottom: 12px; width: 100%;
+            padding: 0 40px; 
             box-sizing: border-box;
         }
         
+        /* Larger buttons with uniform border width */
         button { 
-            flex: 1; padding: 10px 0; border-radius: 50px; border: 2px solid #000; 
+            flex: 1; 
+            padding: 14px 0; /* Increased from 10px for a larger feel */
+            border-radius: 50px; 
+            border: var(--border-width) solid #000; 
             background: var(--button-bg); 
             font-weight: normal;
-            cursor: pointer; font-size: 0.95rem;
+            cursor: pointer; 
+            font-size: 1rem; /* Slightly larger text */
         }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
         
@@ -131,7 +136,7 @@
     </div>
 
     <script>
-        // Dictionary and Game Logic remain the same as previous functional version
+        // Dictionary and Game Logic remain the same
         const dictionary = {
             "BARK": { phon: "bɑːrk", def: "The protective outer covering of a tree trunk." },
             "LEAF": { phon: "liːf", def: "A flattened structure of a higher plant, typically green." },
