@@ -9,9 +9,7 @@
             --bg: #FFFAF0; 
             --card-base: #B09B8C; 
             --card-selected: #FFE4C4; 
-            --button-bg: #D2B48C; 
             --grid-line: #000;
-            /* Uniform slim width for all black lines */
             --border-width: 4px; 
         }
         body { 
@@ -32,7 +30,6 @@
             letter-spacing: 6px;
         }
 
-        /* Slim, uniform grid and border */
         .grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); 
             gap: var(--border-width); 
@@ -66,24 +63,29 @@
 
         .word-card.selected { background: var(--card-selected); }
 
+        /* Adjusted padding and gap for buttons */
         .controls { 
-            display: flex; gap: 12px; justify-content: center; 
-            margin-bottom: 12px; width: 100%;
-            padding: 0 40px; 
+            display: flex; 
+            gap: 20px; /* Increased space between buttons */
+            justify-content: center; 
+            margin-bottom: 12px; 
+            width: 100%;
+            padding: 0 30px; /* Space on sides ensures it stays within grid width */
             box-sizing: border-box;
         }
         
-        /* Larger buttons with uniform border width */
         button { 
             flex: 1; 
-            padding: 14px 0; /* Increased from 10px for a larger feel */
+            padding: 14px 0; 
             border-radius: 50px; 
             border: var(--border-width) solid #000; 
-            background: var(--button-bg); 
+            background: transparent; /* Made background transparent */
             font-weight: normal;
             cursor: pointer; 
-            font-size: 1rem; /* Slightly larger text */
+            font-size: 1.2rem; /* Increased font size */
+            color: #000;
         }
+        button:hover { background: rgba(0,0,0,0.05); } /* Subtle hover effect */
         button:disabled { opacity: 0.3; cursor: not-allowed; }
         
         .attempts-section { 
@@ -95,7 +97,7 @@
         .circles-container { display: flex; gap: 8px; }
         .circle { 
             width: 16px; height: 16px; 
-            background: var(--button-bg); 
+            background: #B09B8C; /* Matched to card base since buttons are transparent */
             border-radius: 50%; transition: opacity 0.3s;
         }
         .circle.spent { opacity: 0; }
@@ -136,7 +138,7 @@
     </div>
 
     <script>
-        // Dictionary and Game Logic remain the same
+        // Dictionary and Game Logic remain the same as previous functional version
         const dictionary = {
             "BARK": { phon: "bɑːrk", def: "The protective outer covering of a tree trunk." },
             "LEAF": { phon: "liːf", def: "A flattened structure of a higher plant, typically green." },
