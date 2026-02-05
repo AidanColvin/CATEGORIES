@@ -7,10 +7,14 @@
     <style>
         :root {
             --bg: #FFFAF0; 
-            --card-base: #B09B8C; 
-            --card-selected: #FFE4C4; 
+            --card-base: #C4A484; 
+            --card-selected: #D3BBA4; 
             --grid-line: #000;
             --border-width: 4px; 
+            --seed: #90EE90;
+            --red-herring: #ADD8E6;
+            --tricky: #FFFFE0;
+            --expert: #FFB6C1;
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -18,178 +22,146 @@
             background: var(--bg); margin: 0; padding: 10px;
             height: 100vh; justify-content: center; overflow: hidden;
         }
-        
-        #game-container { width: 100%; max-width: 620px; }
-        
-        h1 { 
-            text-align: center;
-            margin: 0 0 15px 0; 
-            font-size: 2.8rem; 
-            font-weight: 300; 
-            text-transform: uppercase; 
-            letter-spacing: 6px;
-        }
+        #game-container { width: 100%; max-width: 620px; display: flex; flex-direction: column; }
+        h1 { text-align: center; margin: 0 0 15px 0; font-size: 2.8rem; font-weight: 300; text-transform: uppercase; letter-spacing: 6px; }
 
         .grid { 
-            display: grid; grid-template-columns: repeat(4, 1fr); 
-            gap: var(--border-width); 
-            padding: var(--border-width); 
-            background-color: var(--grid-line); 
-            border: var(--border-width) solid var(--grid-line); 
-            border-radius: 35px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr);
+            gap: var(--border-width); padding: var(--border-width); 
+            background-color: var(--grid-line); border: var(--border-width) solid var(--grid-line); 
+            border-radius: 35px; margin-bottom: 20px; box-sizing: border-box; aspect-ratio: 1 / 1; 
         }
 
         .word-card { 
-            aspect-ratio: 1/1; 
-            background: var(--card-base); 
-            border-radius: 25px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            font-weight: 800; text-transform: uppercase; 
-            cursor: pointer; user-select: none; text-align: center; 
-            padding: 10px;
-            transition: background 0.15s ease;
+            background: var(--card-base); border-radius: 25px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: 800; text-transform: uppercase; cursor: pointer; 
+            user-select: none; text-align: center; padding: 5px; transition: background 0.15s ease;
         }
-        
-        .word-text { font-size: 1.3rem; color: #000; letter-spacing: 0.5px; }
-        
-        .def-container { 
-            font-size: 0.65rem; text-transform: none; font-weight: 500; 
-            margin-top: 5px; color: #222; line-height: 1.1;
-            display: none; 
-        }
+        .word-text { font-size: 1.0rem; color: #000; }
+        .def-container { font-size: 0.6rem; text-transform: none; font-weight: 500; margin-top: 4px; display: none; padding: 0 5px; }
+        .word-card.selected { background: var(--card-selected); filter: brightness(1.1); }
 
-        .word-card.selected { background: var(--card-selected); }
-
-        /* Adjusted padding and gap for buttons */
-        .controls { 
+        /* Row 1: All Buttons on one horizontal line */
+        .controls-row { 
             display: flex; 
-            gap: 20px; /* Increased space between buttons */
+            gap: 8px; 
             justify-content: center; 
-            margin-bottom: 12px; 
-            width: 100%;
-            padding: 0 30px; /* Space on sides ensures it stays within grid width */
+            margin-bottom: 20px; 
+            width: 100%; 
+            padding: 0 5px;
             box-sizing: border-box;
         }
         
         button { 
-            flex: 1; 
-            padding: 14px 0; 
+            flex: 1; /* Makes all buttons equal width */
+            padding: 12px 0; 
             border-radius: 50px; 
             border: var(--border-width) solid #000; 
-            background: transparent; /* Made background transparent */
-            font-weight: normal;
+            background: transparent; 
             cursor: pointer; 
-            font-size: 1.2rem; /* Increased font size */
-            color: #000;
+            font-size: 0.85rem; /* Slightly smaller to fit 4 buttons comfortably */
+            color: #000; 
+            font-weight: bold;
+            white-space: nowrap;
         }
-        button:hover { background: rgba(0,0,0,0.05); } /* Subtle hover effect */
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
+        button:hover { background: rgba(0,0,0,0.05); }
+        button:disabled { opacity: 0.3; cursor: not-allowed; border-color: #666; color: #666; }
         
-        .attempts-section { 
-            display: flex; align-items: center; justify-content: flex-end; gap: 10px;
-            font-weight: 400; font-size: 1.1rem; 
-            width: 100%;
-            padding-right: 5px; 
+        /* Row 2: Attempts section solo at the bottom */
+        .bottom-bar { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            width: 100%; 
+            padding-right: 20px; 
+            box-sizing: border-box; 
         }
+
+        .attempts-section { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .circles-container { display: flex; gap: 8px; }
-        .circle { 
-            width: 16px; height: 16px; 
-            background: #B09B8C; /* Matched to card base since buttons are transparent */
-            border-radius: 50%; transition: opacity 0.3s;
-        }
+        .circle { width: 16px; height: 16px; background: var(--card-base); border-radius: 50%; border: 2px solid #000; }
         .circle.spent { opacity: 0; }
 
-        .solved-row { 
-            grid-column: span 4; height: 85px; border-radius: 25px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            margin-bottom: 10px; font-weight: 800; text-transform: uppercase;
-        }
-
+        .solved-row { width: 100%; height: 80px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 8px; font-weight: 800; text-transform: uppercase; border: var(--border-width) solid var(--grid-line); }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
         .shake { animation: shake 0.2s ease-in-out 0s 2; }
     </style>
 </head>
 <body>
-
     <h1>CATEGORIES</h1>
-    
     <div id="game-container">
         <div id="solved-container"></div>
         <div id="grid" class="grid"></div>
         
-        <div class="controls">
+        <div class="controls-row">
             <button id="shuffle-btn">Shuffle</button>
             <button id="def-btn">Definitions</button>
             <button id="submit-btn" disabled>Submit</button>
+            <button id="new-game-btn">New Game</button>
         </div>
 
-        <div class="attempts-section">
-            <span>Attempts:</span>
-            <div id="circles" class="circles-container">
-                <div class="circle"></div>
-                <div class="circle"></div>
-                <div class="circle"></div>
-                <div class="circle"></div>
+        <div class="bottom-bar">
+            <div class="attempts-section">
+                <span>Attempts:</span>
+                <div id="circles" class="circles-container">
+                    <div class="circle"></div><div class="circle"></div><div class="circle"></div><div class="circle"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Dictionary and Game Logic remain the same as previous functional version
+        // Simple dictionary for demonstration
         const dictionary = {
-            "BARK": { phon: "bɑːrk", def: "The protective outer covering of a tree trunk." },
-            "LEAF": { phon: "liːf", def: "A flattened structure of a higher plant, typically green." },
-            "ROOT": { phon: "ruːt", def: "The part of a plant that attaches it to the ground." },
-            "BRANCH": { phon: "bræntʃ", def: "A part of a tree which grows out from the trunk." },
-            "SALES": { phon: "seɪlz", def: "The department responsible for selling goods." },
-            "LEGAL": { phon: "ˈliːɡl", def: "Related to or permitted by law." },
-            "ADMIN": { phon: "ˈædmɪn", def: "The management of public or business affairs." },
-            "SECTOR": { phon: "ˈsektər", def: "An area or portion that is distinct from others." },
-            "SOW": { phon: "soʊ", def: "To plant seed by scattering it on or in the earth." },
-            "SEED": { phon: "siːd", def: "A flowering plant's unit of reproduction." },
-            "BLOOM": { phon: "bluːm", def: "A flower, especially one cultivated for its beauty." },
-            "GARDEN": { phon: "ˈɡɑːrdn", def: "A piece of ground used for growing flowers or fruit." },
-            "WOOF": { phon: "wʊf", def: "The sound made by a barking dog." },
-            "HOWL": { phon: "haʊl", def: "A long, loud, doleful cry uttered by an animal." },
-            "GROWL": { phon: "ɡraʊl", def: "A low guttural sound made in the throat by an animal." },
-            "YELP": { phon: "jelp", def: "A short, sharp cry, especially of pain or alarm." }
+            "APPLE": { def: "A round fruit with red or green skin." },
+            "DATE": { def: "A sweet brown fruit or a specific day." },
+            "LIME": { def: "A small, green, sour citrus fruit." },
+            "BARK": { def: "The outer covering of a tree or a dog's cry." },
+            "PEN": { def: "An instrument for writing with ink." },
+            "FOLD": { def: "To bend something over on itself." }
         };
 
-        let gameData = [];
-        let currentWords = [];
-        let selectedWords = [];
-        let mistakes = 4;
+        let gameData = [], currentWords = [], selectedWords = [], mistakes = 4, masterBank = null;
 
         async function initGame() {
             try {
-                const response = await fetch('categories.json');
-                const data = await response.json();
-                const batchKey = Object.keys(data.batches)[0];
-                gameData = data.batches[batchKey];
-                currentWords = gameData.flatMap(cat => cat.words.map(w => ({ text: w, catId: cat.id })));
-                shuffleWords();
+                const response = await fetch('master_category_bank.json');
+                masterBank = await response.json();
+                loadNewPuzzle();
             } catch (e) { console.error("Error loading JSON", e); }
+        }
+
+        function loadNewPuzzle() {
+            const batches = Object.keys(masterBank.batches);
+            const randomBatchKey = batches[Math.floor(Math.random() * batches.length)];
+            let potentialCategories = masterBank.batches[randomBatchKey];
+            
+            gameData = potentialCategories.length > 4 ? potentialCategories.sort(() => 0.5 - Math.random()).slice(0, 4) : potentialCategories;
+            
+            mistakes = 4;
+            selectedWords = [];
+            document.getElementById('solved-container').innerHTML = '';
+            document.querySelectorAll('.circle').forEach(c => c.classList.remove('spent'));
+            document.getElementById('submit-btn').disabled = true;
+
+            currentWords = [];
+            gameData.forEach(cat => cat.words.forEach(word => currentWords.push({ text: word, catId: cat.id, color: cat.color })));
+            shuffleWords();
         }
 
         function renderGrid() {
             const gridEl = document.getElementById('grid');
             gridEl.innerHTML = '';
-            if (currentWords.length === 0) { gridEl.style.display = 'none'; return; }
-
             currentWords.forEach(wordObj => {
                 const div = document.createElement('div');
                 div.className = 'word-card';
                 if (selectedWords.find(sw => sw.text === wordObj.text)) div.classList.add('selected');
                 
-                const info = dictionary[wordObj.text] || { phon: "", def: "Definition loading..." };
+                const info = dictionary[wordObj.text] || { def: "No definition found." };
                 div.innerHTML = `
                     <div class="word-text">${wordObj.text}</div>
-                    <div class="def-container" id="def-${wordObj.text}">
-                        <b>${info.phon}</b><br>${info.def}
-                    </div>
+                    <div class="def-container" id="def-${wordObj.text}">${info.def}</div>
                 `;
                 div.onclick = () => toggleSelect(div, wordObj);
                 gridEl.appendChild(div);
@@ -197,11 +169,11 @@
         }
 
         function toggleSelect(el, wordObj) {
-            const defDiv = document.getElementById(`def-${wordObj.text}`);
             if (el.classList.contains('selected')) {
                 el.classList.remove('selected');
                 selectedWords = selectedWords.filter(w => w.text !== wordObj.text);
-                if(defDiv) defDiv.style.display = 'none';
+                const def = document.getElementById(`def-${wordObj.text}`);
+                if(def) def.style.display = 'none';
             } else if (selectedWords.length < 4) {
                 el.classList.add('selected');
                 selectedWords.push(wordObj);
@@ -215,14 +187,11 @@
         }
 
         document.getElementById('shuffle-btn').onclick = shuffleWords;
-
+        document.getElementById('new-game-btn').onclick = loadNewPuzzle;
         document.getElementById('def-btn').onclick = () => {
             selectedWords.forEach(w => {
-                const defDiv = document.getElementById(`def-${w.text}`);
-                if (defDiv) {
-                    const isVisible = defDiv.style.display === 'block';
-                    defDiv.style.display = isVisible ? 'none' : 'block';
-                }
+                const def = document.getElementById(`def-${w.text}`);
+                if (def) def.style.display = def.style.display === 'block' ? 'none' : 'block';
             });
         };
 
@@ -238,7 +207,8 @@
             currentWords = currentWords.filter(w => w.catId !== catId);
             const row = document.createElement('div');
             row.className = 'solved-row';
-            row.style.backgroundColor = `var(--${category.color.toLowerCase()})`;
+            const colorMap = { "Seed": "--seed", "Red Herring": "--red-herring", "Tricky": "--tricky", "Expert": "--expert" };
+            row.style.backgroundColor = `var(${colorMap[category.color] || "--card-base"})`;
             row.innerHTML = `<div>${category.name}</div><div style="font-weight:normal; font-size: 0.9rem">${category.words.join(', ')}</div>`;
             document.getElementById('solved-container').appendChild(row);
             selectedWords = [];
@@ -253,9 +223,7 @@
             const grid = document.getElementById('grid');
             grid.classList.add('shake');
             setTimeout(() => grid.classList.remove('shake'), 500);
-            if (mistakes === 0) {
-                setTimeout(() => { alert("Game Over!"); location.reload(); }, 600);
-            }
+            if (mistakes === 0) { setTimeout(() => { alert("Game Over!"); loadNewPuzzle(); }, 600); }
         }
 
         initGame();
